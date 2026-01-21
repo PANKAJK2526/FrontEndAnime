@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  color: white;
+  overflow-x: hidden;
+  font-family: system-ui, sans-serif;
+}
+
+/* Required for ScrollSmoother */
+#smooth-wrapper {
+  overflow: hidden;
+}
+
+#smooth-content {
+  will-change: transform;
+}
