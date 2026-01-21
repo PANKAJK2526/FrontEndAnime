@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { gsap } from '@/lib/gsap'
+import { useState } from 'react'
 import BeerScene from './BeerScene'
 import FlavourOverlay from './FlavourOverlay'
 
@@ -29,30 +28,30 @@ export const FLAVOURS = [
   },
 ]
 
-
 export default function HeroSection() {
   const [flavourIndex, setFlavourIndex] = useState(0)
-  const rotationCount = useRef(0)
 
   return (
     <section
       className="relative h-screen w-full overflow-hidden flex items-center justify-center transition-colors duration-500"
       style={{ backgroundColor: FLAVOURS[flavourIndex].bg }}
     >
-      <h1 className="absolute z-10 text-center text-7xl md:text-9xl font-bold tracking-tight">
+      {/* Headline (behind can) */}
+      <h1 className="absolute z-10 text-center text-7xl md:text-9xl font-bold tracking-tight pointer-events-none">
         CLASSIC CRAFT BEERS
         <br />
         BREWED WITHOUT FUSS
       </h1>
 
+      {/* 3D Can */}
       <BeerScene
-  flavour={FLAVOURS[flavourIndex]}
-  onNextFlavour={() =>
-    setFlavourIndex((i) => (i + 1) % FLAVOURS.length)
-  }
-/>
+        flavour={FLAVOURS[flavourIndex]}
+        onNextFlavour={() =>
+          setFlavourIndex((i) => (i + 1) % FLAVOURS.length)
+        }
+      />
 
-
+      {/* Flavour text */}
       <FlavourOverlay flavour={FLAVOURS[flavourIndex]} />
     </section>
   )
