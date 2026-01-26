@@ -40,27 +40,52 @@ export default function HeroSection() {
   useEffect(() => {
     const tl = gsap.timeline()
 
-    // Letter-by-letter reveal (slow, cinematic)
     tl.to(lettersRef.current, {
       opacity: 1,
       x: 0,
       y: 0,
       duration: 0.6,
       ease: 'power3.out',
-      stagger: 0.045, // ⬅️ controls speed (increase = slower)
+      stagger: 0.045,
     })
 
-    // Start can AFTER text completes
     tl.call(() => setStartCan(true))
   }, [])
 
   return (
     <section
-      className="relative h-screen w-full overflow-hidden flex items-center justify-center transition-colors duration-500"
+      className="
+        relative
+        h-screen
+        w-full
+        overflow-hidden
+        flex
+        items-center
+        justify-center
+        transition-colors
+        duration-500
+        text-white
+      "
       style={{ backgroundColor: FLAVOURS[flavourIndex].bg }}
     >
       {/* HEADLINE */}
-      <h1 className="absolute z-10 text-center text-7xl md:text-9xl font-bold tracking-tight leading-tight pointer-events-none">
+      <h1
+        className="
+          absolute
+          top-1/2
+          -translate-y-[55%]
+          z-10
+          pointer-events-none
+          text-center
+          font-extrabold
+          tracking-tight
+          leading-[0.95]
+          text-[clamp(3rem,10vw,9rem)]
+          md:text-[clamp(6rem,12vw,12rem)]
+          max-w-[14ch]
+          opacity-90
+        "
+      >
         {HEADLINE.split('').map((char, i) => (
           <span
             key={i}
@@ -69,7 +94,7 @@ export default function HeroSection() {
             }}
             className="inline-block"
             style={{
-              opacity: 0,                 // 🔒 prevents initial flash
+              opacity: 0,
               transform: 'translateX(-20px) translateY(6px)',
             }}
           >
@@ -78,7 +103,7 @@ export default function HeroSection() {
         ))}
       </h1>
 
-      {/* CAN */}
+      {/* BEER CAN SCENE */}
       <BeerScene
         start={startCan}
         flavour={FLAVOURS[flavourIndex]}
@@ -87,7 +112,7 @@ export default function HeroSection() {
         }
       />
 
-      {/* FLAVOUR OVERLAY */}
+      {/* FLAVOUR OVERLAY — ABSOLUTE, HERO-BOUND */}
       <FlavourOverlay flavour={FLAVOURS[flavourIndex]} />
     </section>
   )
