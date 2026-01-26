@@ -25,7 +25,7 @@ body {
   transform: translateY(10vh);
   opacity: 0;
   animation: flavour-up 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 5s;
+  animation-delay: 3s;
 
 }
 
@@ -34,4 +34,24 @@ body {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+.bg-waves-root {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-wave-filled {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 140vmax;
+  height: 140vmax;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
 }
