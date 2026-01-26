@@ -20,7 +20,6 @@ function Can({
   const groupRef = useRef<THREE.Group>(null)
   const sideMaterial = useRef<THREE.MeshStandardMaterial>(null)
 
-  // Use a ref to access the latest callback without triggering re-runs
   const onNextFlavourRef = useRef(onNextFlavour)
   onNextFlavourRef.current = onNextFlavour
 
@@ -28,6 +27,15 @@ function Can({
     y: 3.5,
     rotation: -0.6,
   })
+
+  // 🌿 Gentle shake offsets
+  const shake = useRef({
+    x: 0,
+    z: 0,
+  })
+
+  // ✅ NEW: rotation counter (minimal addition)
+  const rotationCount = useRef(0)
 
   const textures = useTexture({
     neipa: '/labels/neipa.png',
@@ -45,12 +53,50 @@ function Can({
   const BACK_START = Math.PI * 0.55
   const BACK_END = Math.PI * 1.45
 
+  // 🍺 Medium gentle shake (balanced)
+  const triggerShake = () => {
+    gsap.killTweensOf(shake.current)
+
+    shake.current.x = 0
+    shake.current.z = 0
+
+    const tl = gsap.timeline()
+
+    tl.to(shake.current, {
+      x: 0.12,
+      z: -0.1,
+      duration: 0.1,
+      ease: 'sine.inOut',
+    })
+
+    tl.to(shake.current, {
+      x: -0.14,
+      z: 0.12,
+      duration: 0.1,
+      ease: 'sine.inOut',
+    })
+
+    tl.to(shake.current, {
+      x: 0.08,
+      z: -0.06,
+      duration: 0.1,
+      ease: 'sine.inOut',
+    })
+
+    tl.to(shake.current, {
+      x: 0,
+      z: 0,
+      duration: 0.1,
+      ease: 'sine.out',
+    })
+  }
+
   useEffect(() => {
     if (!start) return
 
     const tl = gsap.timeline()
 
-    // 🐱 Cat-thrown drop
+    // 🐱 Drop
     tl.to(state.current, {
       y: -0.3,
       rotation: 0.4,
@@ -73,17 +119,18 @@ function Can({
       ease: 'none',
       repeat: -1,
       onRepeat: () => {
+        rotationCount.current += 1
         swappedThisTurn.current = false
-        // Call the ref to change state without restarting this timeline
-        onNextFlavourRef.current()
+
+        // ✅ Shake + flavour change only every 2nd rotation
+        if (rotationCount.current % 2 === 0) {
+          triggerShake()
+          onNextFlavourRef.current()
+        }
       },
     })
 
-    return () => {
-      tl.kill()
-    }
-    // ⚠️ CRITICAL FIX: Only run this effect when 'start' changes. 
-    // Do not include onNextFlavour or label here.
+    return () => tl.kill()
   }, [start])
 
   useFrame(({ clock }) => {
@@ -93,21 +140,23 @@ function Can({
     const rot = ((raw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)
     const time = clock.getElapsedTime()
 
-    // Apply transforms to the GROUP
     groupRef.current.position.y = state.current.y
     groupRef.current.rotation.y = raw
 
-    // Slanted axis
+    // Base tilt
     groupRef.current.rotation.x = 0.15
     groupRef.current.rotation.z = 0.08
 
-    // Subtle shake
+    // Idle micro motion
     groupRef.current.rotation.x += Math.sin(time * 6) * 0.015
     groupRef.current.rotation.z += Math.cos(time * 5) * 0.015
 
+    // 🌿 Flavour-change shake only
+    groupRef.current.rotation.x += shake.current.x
+    groupRef.current.rotation.z += shake.current.z
+
     // Backside-only label swap
     const isBackside = rot > BACK_START && rot < BACK_END
-
     if (isBackside && !swappedThisTurn.current) {
       sideMaterial.current.map = textures[label]
       sideMaterial.current.needsUpdate = true
@@ -115,7 +164,6 @@ function Can({
     }
   })
 
-  // Realistic Aluminum Material
   const metalMaterialProps = {
     color: '#dadada',
     metalness: 1,
@@ -124,8 +172,7 @@ function Can({
 
   return (
     <group ref={groupRef}>
-      {/* 1. Main Body (Label) */}
-      <mesh position={[0, 0, 0]}>
+      <mesh>
         <cylinderGeometry args={[0.6, 0.6, 1.6, 64]} />
         <meshStandardMaterial
           ref={sideMaterial}
@@ -135,31 +182,26 @@ function Can({
         />
       </mesh>
 
-      {/* 2. The Neck (Tapered Top) */}
       <mesh position={[0, 0.95, 0]}>
         <cylinderGeometry args={[0.52, 0.6, 0.3, 64]} />
         <meshStandardMaterial {...metalMaterialProps} />
       </mesh>
 
-      {/* 3. The Top Rim */}
       <mesh position={[0, 1.1, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.52, 0.02, 16, 64]} />
         <meshStandardMaterial {...metalMaterialProps} />
       </mesh>
 
-      {/* 4. The Top Lid */}
       <mesh position={[0, 1.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.52, 64]} />
         <meshStandardMaterial {...metalMaterialProps} />
       </mesh>
 
-      {/* 5. The Bottom Curve */}
       <mesh position={[0, -0.9, 0]}>
         <cylinderGeometry args={[0.6, 0.45, 0.2, 64]} />
         <meshStandardMaterial {...metalMaterialProps} />
       </mesh>
 
-      {/* 6. Bottom Rim */}
       <mesh position={[0, -1.0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.45, 0.02, 16, 64]} />
         <meshStandardMaterial {...metalMaterialProps} />
